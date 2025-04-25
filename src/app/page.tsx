@@ -1,4 +1,5 @@
 import { ConnectWallet } from "@/shared/components/connect-wallet";
+import { DailyCheckIn } from "@/shared/components/daily-check-in";
 import { WandIcon } from "lucide-react";
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Wallet Wizard </h1>
       </div>
       <ConnectWallet />
+      <DailyCheckIn />
     </div>
   );
 }
