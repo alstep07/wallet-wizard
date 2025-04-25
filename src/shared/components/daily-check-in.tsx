@@ -9,7 +9,7 @@ import {
 } from "wagmi";
 import { Button } from "../ui/button";
 
-const DAILY_CHECK_IN_ADDRESS = "0x6296ebd5fd4022f27628aa04b94d06b5dfffe825";
+const DAILY_CHECK_IN_ADDRESS = "0x36bc4dde020f8025ddce99949a0308dceadc10f7";
 
 const DAILY_CHECK_IN_ABI = [
   {
@@ -47,21 +47,16 @@ const DAILY_CHECK_IN_ABI = [
     inputs: [
       {
         internalType: "address",
-        name: "",
+        name: "account",
         type: "address",
       },
     ],
-    name: "users",
+    name: "canCheckIn",
     outputs: [
       {
-        internalType: "uint256",
-        name: "lastCheckIn",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "streak",
-        type: "uint256",
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -73,15 +68,24 @@ export function DailyCheckIn() {
   const { address } = useAccount();
   const [streak, setStreak] = useState<number>(0);
   const [lastCheckIn, setLastCheckIn] = useState<number>(0);
+  const [canCheckIn, setCanCheckIn] = useState<boolean>(true);
 
-  const {
-    data: userData,
-    refetch: refetchUserData,
-    error: userDataError,
-  } = useReadContract({
+  const { data: userData, refetch: refetchUserData } = useReadContract({
     address: DAILY_CHECK_IN_ADDRESS as `0x${string}`,
     abi: DAILY_CHECK_IN_ABI,
     functionName: "getUser",
+    args: [address as `0x${string}`],
+    query: {
+      enabled: !!address,
+      retry: 3,
+      retryDelay: 1000,
+    },
+  });
+
+  const { data: canCheckInData } = useReadContract({
+    address: DAILY_CHECK_IN_ADDRESS as `0x${string}`,
+    abi: DAILY_CHECK_IN_ABI,
+    functionName: "canCheckIn",
     args: [address as `0x${string}`],
     query: {
       enabled: !!address,
@@ -96,11 +100,17 @@ export function DailyCheckIn() {
 
   useEffect(() => {
     if (userData) {
-      const [streak, lastCheckIn] = userData;
-      setStreak(Number(streak));
-      setLastCheckIn(Number(lastCheckIn));
+      const [userStreak, userLastCheckIn] = userData;
+      setStreak(Number(userStreak));
+      setLastCheckIn(Number(userLastCheckIn));
     }
-  }, [userData, userDataError, address]);
+  }, [userData]);
+
+  useEffect(() => {
+    if (canCheckInData !== undefined) {
+      setCanCheckIn(canCheckInData);
+    }
+  }, [canCheckInData]);
 
   useEffect(() => {
     if (isCheckInSuccess) {
@@ -152,7 +162,7 @@ export function DailyCheckIn() {
       </div>
       <Button
         onClick={handleCheckIn}
-        disabled={isCheckingIn}
+        disabled={isCheckingIn || !canCheckIn}
         className="w-full"
       >
         {isCheckingIn ? "Checking in..." : "Check In"}
