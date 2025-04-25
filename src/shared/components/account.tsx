@@ -1,33 +1,23 @@
-import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from 'wagmi'
+import { useAccount, useDisconnect, useEnsName } from "wagmi";
+import { Button } from "../ui/button";
 
 export function Account() {
-  const { address } = useAccount()
-  const { disconnect } = useDisconnect()
-  const { data: ensName } = useEnsName({ address })
-  const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { data: ensName } = useEnsName({ address });
 
   return (
-    <div className="flex items-center gap-4">
-      {ensAvatar && (
-        <img
-          alt="ENS Avatar"
-          src={ensAvatar}
-          className="w-8 h-8 rounded-full"
-        />
-      )}
-      <div className="flex flex-col">
+    <div className="flex justify-center items-center gap-4">
+      <div className="flex flex-col gap-4">
         {address && (
           <div className="text-sm">
             {ensName ? `${ensName} (${address})` : address}
           </div>
         )}
-        <button
-          onClick={() => disconnect()}
-          className="text-sm text-red-500 hover:text-red-600"
-        >
+        <Button onClick={() => disconnect()} variant="outline">
           Disconnect
-        </button>
+        </Button>
       </div>
     </div>
-  )
-} 
+  );
+}
